@@ -6,8 +6,48 @@
     <title>Expense Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Function to update the recommendation via AJAX when the product is edited
+        async function updateRecommendation(productElement, recommendationElement) {
+            const product = productElement.textContent.trim();
+
+            // Make an AJAX call to Flask backend
+            const response = await fetch('/update_recommendation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ product })
+            });
+
+            const recommendations = await response.json();
+            // Update the recommendations in the table
+            recommendationElement.textContent = recommendations.join(', ');
+
+            // Visual feedback for checkbox
+            checkbox.checked = false; // Uncheck after update
+            checkbox.style.backgroundColor = ""; // Reset background color
+        }
+
+        // Event handler for checkbox click
+        document.addEventListener("DOMContentLoaded", function() {
+            const checkboxes = document.querySelectorAll('.update-checkbox');
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        const productElement = document.querySelectorAll('.editable-product')[index];
+                        const recommendationElement = document.querySelectorAll('.recommendation')[index];
+                        updateRecommendation(productElement, recommendationElement);
+                        this.checked = false; // Uncheck after update
+                    }
+                });
+            });
+        });
+        
+    </script>
 </head>
 <body>
+
     <div class="container">
         <!-- Static Gauge for Monthly Expenses -->
         <div class="gauge-container">
@@ -23,32 +63,36 @@
             <div class="pie-chart">
                 <canvas id="expensePieChart"></canvas>
             </div>
-            <div class="eco-friendly-options">
-                <h3>Eco-Friendly Options</h3>
-                <form method="POST">
-                    <button type="submit">Get Recommendations</button>
-                </form>
-                {% if product_recommendations %}
-                    <table>
-                        <thead>
+            <!-- Eco-Friendly Options Section -->
+        <div class="eco-friendly-options">
+            <h3>Eco-Friendly Options</h3>
+            <form method="POST">
+                <button type="submit">Get Recommendations</button>
+            </form>
+            {% if product_recommendations %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Eco-Friendly Alternative</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product, recommendations in product_recommendations.items() %}
                             <tr>
-                                <th>Product</th>
-                                <th>Eco-Friendly Alternative</th>
+                                <td contenteditable="true" class="editable-product">{{ product }}</td>
+                                <td class="recommendation">{{ recommendations | join(', ') }}</td>
+                                <td>
+                                    <input type="checkbox" class="update-checkbox">
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for product, recommendation in product_recommendations.items() %}
-                                <tr>
-                                    <td>{{ product }}</td>
-                                    <td>{{ recommendation | join(', ') }}</td>  <!-- Join multiple recommendations -->
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>No recommendations available. Click the button above to get suggestions.</p>
-                {% endif %}
-            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No recommendations available. Click the button above to get suggestions.</p>
+            {% endif %}
+        </div>
         </div>
     </div>
 

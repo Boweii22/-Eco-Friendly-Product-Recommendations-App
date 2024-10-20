@@ -30,7 +30,7 @@
 # if __name__ == "__main__":
 #     app.run(debug=True)
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import openai
 
 # Replace with your OpenAI API key
@@ -84,6 +84,14 @@ def index():
         return render_template("index.html", product_recommendations=product_recommendations)
     
     return render_template("index.html", product_recommendations=None)
+
+@app.route("/update_recommendation", methods=["POST"])
+def update_recommendation():
+    # Get the edited product from the request
+    product = request.json.get("product")
+    # Fetch updated recommendations based on the new product name
+    recommendations = get_openai_recommendations(product)
+    return jsonify(recommendations)
 
 if __name__ == "__main__":
     app.run(debug=True)
