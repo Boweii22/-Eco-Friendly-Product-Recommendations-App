@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Static Gauge for Monthly Expenses -->
+        <div class="gauge-container">
+            <canvas id="gaugeChart" width="400" height="200"></canvas>
+            <div id="expense-label">
+                <h2>4000$</h2>
+                <p>Monthly Expenses</p>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="charts-container">
+            <div class="pie-chart">
+                <canvas id="expensePieChart"></canvas>
+            </div>
+            <div class="eco-friendly-options">
+                <h3>Eco-Friendly Options</h3>
+                <form method="POST">
+                    <button type="submit">Get Recommendations</button>
+                </form>
+                {% if product_recommendations %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Eco-Friendly Alternative</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product, recommendation in product_recommendations.items() %}
+                                <tr>
+                                    <td>{{ product }}</td>
+                                    <td>{{ recommendation | join(', ') }}</td>  <!-- Join multiple recommendations -->
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No recommendations available. Click the button above to get suggestions.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+    <script>
+        // Static Gauge Chart
+        const ctx = document.getElementById('gaugeChart').getContext('2d');
+        const gaugeChart = new Chart(ctx, {
+            type: 'doughnut', // Using doughnut type for gauge
+            data: {
+                labels: ['Expenses'],
+                datasets: [{
+                    label: 'Monthly Expenses',
+                    data: [4000, 6000], // 4000 spent, 6000 remaining for a max of 10,000
+                    backgroundColor: ['#00FF00', '#CCCCCC'], // Green for expenses, grey for remaining
+                    borderWidth: 0,
+                    hoverBorderColor: 'rgba(0,0,0,0)'
+                }]
+            },
+            options: {
+                cutout: '70%',
+                rotation: 270,
+                circumference: 180,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
